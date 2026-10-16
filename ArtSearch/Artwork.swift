@@ -7,9 +7,18 @@
 
 import Foundation
 
-
-struct Artwork: Identifiable {
+struct Artwork: Identifiable, Decodable {
     let id: Int
     let title: String
     let artist: String
+
+    enum CodingKeys: String, CodingKey {
+        case id = "objectID"
+        case title
+        case artist = "artistDisplayName"
+    }
+}
+
+struct SearchResponse: Decodable {
+    let objectIDs: [Int]?                               // the Met sends null when nothing matches
 }
