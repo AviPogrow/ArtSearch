@@ -4,7 +4,6 @@
 //
 //  Created by Avi Pogrow on 10/16/26.
 //
-
 import Foundation
 
 struct Artwork: Identifiable, Decodable {
@@ -17,8 +16,4 @@ struct Artwork: Identifiable, Decodable {
         case title
         case artist = "artistDisplayName"
     }
-}
-
-struct SearchResponse: Decodable {
-    let objectIDs: [Int]?                               // the Met sends null when nothing matches
 }
