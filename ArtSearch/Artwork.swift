@@ -6,7 +6,7 @@
 //
 import Foundation
 
-struct Artwork: Identifiable, Decodable {
+struct Artwork: Identifiable, Decodable, Equatable {
     let id: Int
     let title: String
     let artist: String

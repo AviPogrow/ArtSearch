@@ -8,36 +8,56 @@
 import Foundation
 import Combine
 
+enum SearchPhase: Equatable {
+    case idle
+    case loading
+    case loaded([Artwork])
+    case empty
+    case failed(String)
+}
+
 @MainActor final class SearchViewModel: ObservableObject {
-    @Published var query = ""                                // the view binds to this
-    @Published private(set) var artworks: [Artwork] = []
-    @Published private(set) var isLoading = false
-    @Published private(set) var errorMessage: String?
+    @Published var query = ""
+    @Published private(set) var phase: SearchPhase = .idle
 
     private let service = ArtworkService()
     private var searchTask: Task<Void, Never>?
 
     func submit() {
-        searchTask?.cancel()                                 // a new search replaces the old one
+        searchTask?.cancel()
         let term = query
-        isLoading = true
-        errorMessage = nil
+        phase = .loading
         searchTask = Task {
             do {
-                let ids = try await service.searchIDs(for: term)
-                var results: [Artwork] = []
-                for id in ids.prefix(20) {
-                    if let artwork = try? await service.artwork(id: id) {
-                        results.append(artwork)
-                    }
-                }
+                let results = try await loadResults(for: term)
                 guard !Task.isCancelled else { return }
-                artworks = results
+                phase = results.isEmpty ? .empty : .loaded(results)
             } catch {
                 guard !Task.isCancelled else { return }
-                errorMessage = "Search failed. Try again."
+                phase = .failed("Search failed. Try again.")
             }
-            isLoading = false
         }
+    }
+
+    func refresh() async {                 // async, so .refreshable can await it
+        searchTask?.cancel()
+        let term = query
+        do {
+            let results = try await loadResults(for: term)
+            phase = results.isEmpty ? .empty : .loaded(results)
+        } catch {
+            // keep the old list on screen if a refresh fails
+        }
+    }
+
+    private func loadResults(for term: String) async throws -> [Artwork] {
+        let ids = try await service.searchIDs(for: term)
+        var results: [Artwork] = []
+        for id in ids.prefix(20) {
+            if let artwork = try? await service.artwork(id: id) {
+                results.append(artwork)
+            }
+        }
+        return results
     }
 }
