@@ -4,7 +4,6 @@
 //
 //  Created by Avi Pogrow on 10/16/26.
 //
-
 import Foundation
 import Combine
 
@@ -16,35 +15,39 @@ enum SearchPhase: Equatable {
     case failed(String)
 }
 
+struct SearchState: Equatable {
+    var query = ""
+    var phase: SearchPhase = .idle
+}
+
 @MainActor final class SearchViewModel: ObservableObject {
-    @Published var query = ""
-    @Published private(set) var phase: SearchPhase = .idle
+    @Published var state = SearchState()   // still writable, so $viewModel.state.query works
 
     private let service = ArtworkService()
     private var searchTask: Task<Void, Never>?
 
     func submit() {
         searchTask?.cancel()
-        let term = query
-        phase = .loading
+        let term = state.query
+        state.phase = .loading
         searchTask = Task {
             do {
                 let results = try await loadResults(for: term)
                 guard !Task.isCancelled else { return }
-                phase = results.isEmpty ? .empty : .loaded(results)
+                state.phase = results.isEmpty ? .empty : .loaded(results)
             } catch {
                 guard !Task.isCancelled else { return }
-                phase = .failed("Search failed. Try again.")
+                state.phase = .failed("Search failed. Try again.")
             }
         }
     }
 
-    func refresh() async {                 // async, so .refreshable can await it
+    func refresh() async {
         searchTask?.cancel()
-        let term = query
+        let term = state.query
         do {
             let results = try await loadResults(for: term)
-            phase = results.isEmpty ? .empty : .loaded(results)
+            state.phase = results.isEmpty ? .empty : .loaded(results)
         } catch {
             // keep the old list on screen if a refresh fails
         }
