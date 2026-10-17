@@ -20,7 +20,7 @@ struct SearchView: View {
                     ProgressView()
                 case .loaded(let artworks):
                     List(artworks) { ArtworkRow(artwork: $0) }
-                        .refreshable { await viewModel.refresh() }   // await, never wrap in Task
+                        .refreshable { viewModel.send(.refreshPulled) }   // await, never wrap in Task
                 case .empty:
                     ContentUnavailableView.search(text: viewModel.state.query)
                 case .failed(let message):
@@ -30,7 +30,7 @@ struct SearchView: View {
             }
             .navigationTitle("Art Search")
             .searchable(text: $viewModel.state.query)
-            .onSubmit(of: .search) { viewModel.submit() }
+            .onSubmit(of: .search) { viewModel.send(.searchSubmitted) }
         }
     }
 }
