@@ -22,7 +22,19 @@ struct SearchState: Equatable {
 @MainActor final class SearchViewModel: ObservableObject {
     @Published private(set) var state = SearchState()
 
-    private let service = ArtworkService()
+    private let service: ArtworkService
+
+    // whoever creates the SearchViewModel injects this in
+    init(service: ArtworkService) {
+        self.service = service
+    }
+    
+    // the app uses this one; it builds the real service on the main actor
+    convenience init() {
+        self.init(service: ArtworkService())
+    }
+    
+    
     private var searchTask: Task<Void, Never>?
 
     func send(_ intent: SearchIntent) {
