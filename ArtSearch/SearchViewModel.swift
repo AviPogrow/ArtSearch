@@ -36,6 +36,11 @@ struct SearchState: Equatable {
             startSearch(showsLoading: false)
         }
     }
+    
+    func sendAndWait(_ intent: SearchIntent) async {
+        send(intent)              // the same single door: logs, switches, starts the work
+        await searchTask?.value   // then wait for the task that send just started
+    }
 
     private func startSearch(showsLoading: Bool) {
         searchTask?.cancel()

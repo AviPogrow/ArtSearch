@@ -33,7 +33,8 @@ struct SearchView: View {
                     ProgressView()
                 case .loaded(let artworks):
                     List(artworks) { ArtworkRow(artwork: $0) }
-                        .refreshable { viewModel.send(.refreshPulled) }   // await, never wrap in Task
+                        .refreshable { await viewModel.sendAndWait(.refreshPulled) }   // was viewModel.send(.refreshPulled)
+                
                 case .empty:
                     ContentUnavailableView.search(text: viewModel.state.query)
                 case .failed(let message):
