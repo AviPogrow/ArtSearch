@@ -22,10 +22,10 @@ struct SearchState: Equatable {
 @MainActor final class SearchViewModel: ObservableObject {
     @Published private(set) var state = SearchState()
 
-    private let service: ArtworkService
+    private let service: any ArtworkSearching
 
     // whoever creates the SearchViewModel injects this in
-    init(service: ArtworkService) {
+    init(service: any ArtworkSearching) {
         self.service = service
     }
     

@@ -7,11 +7,16 @@
 
 import Foundation
 
+protocol ArtworkSearching: Sendable {
+    func searchIDs(for term: String) async throws -> [Int]
+    func artwork(id: Int) async throws -> Artwork
+}
+
 struct SearchResponse: Decodable {
     let objectIDs: [Int]?                               // the Met sends null when nothing matches
 }
 
-struct ArtworkService {
+struct ArtworkService: ArtworkSearching {
     private let baseURL = "https://collectionapi.metmuseum.org/public/collection"
 
     func searchIDs(for term: String) async throws -> [Int] {
