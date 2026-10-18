@@ -8,6 +8,19 @@
 import SwiftUI
 
 struct SearchView: View {
+    
+    // computed property that has a custom
+    // setter and getter connected to the view model
+    // when read it returns viewModel.state.query
+    // but when written it calls the send method
+    // on the view model
+    private var queryBinding: Binding<String> {
+        Binding(
+            get: { viewModel.state.query },
+            set: { viewModel.send(.queryChanged($0)) }
+        )
+    }
+    
     @StateObject private var viewModel = SearchViewModel()
 
     var body: some View {
@@ -29,7 +42,7 @@ struct SearchView: View {
                 }
             }
             .navigationTitle("Art Search")
-            .searchable(text: $viewModel.state.query)
+            .searchable(text: queryBinding)
             .onSubmit(of: .search) { viewModel.send(.searchSubmitted) }
         }
     }

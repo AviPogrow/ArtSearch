@@ -20,7 +20,7 @@ struct SearchState: Equatable {
 }
 
 @MainActor final class SearchViewModel: ObservableObject {
-    @Published var state = SearchState()
+    @Published private(set) var state = SearchState()
 
     private let service = ArtworkService()
     private var searchTask: Task<Void, Never>?
