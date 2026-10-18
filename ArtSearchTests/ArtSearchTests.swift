@@ -8,29 +8,21 @@
 import XCTest
 @testable import ArtSearch
 
+@MainActor
 final class ArtSearchTests: XCTestCase {
 
-    override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
-    }
+    func testSearchShowsResults() async {
+        // Arrange: set up the fake and the view model
+        let lilies = Artwork(id: 1, title: "Water Lilies", artist: "Claude Monet")
+        let fake = FakeArtworkService(ids: [1], artworks: [1: lilies])
+        let viewModel = SearchViewModel(service: fake)
 
-    override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-    }
+        // Act: do what the user would do
+        viewModel.send(.queryChanged("monet"))
+        await viewModel.sendAndWait(.searchSubmitted)
 
-    func testExample() throws {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-        // Any test you write for XCTest can be annotated as throws and async.
-        // Mark your test throws to produce an unexpected failure when your test encounters an uncaught error.
-        // Mark your test async to allow awaiting for asynchronous code to complete. Check the results with assertions afterwards.
+        // Assert: check the whole screen in one comparison
+        
+        XCTAssertEqual(viewModel.state, SearchState(query: "monet", phase: .loaded([lilies])))
     }
-
-    func testPerformanceExample() throws {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
-        }
-    }
-
 }
