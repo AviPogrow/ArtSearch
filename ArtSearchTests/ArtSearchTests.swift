@@ -25,4 +25,25 @@ final class ArtSearchTests: XCTestCase {
         
         XCTAssertEqual(viewModel.state, SearchState(query: "monet", phase: .loaded([lilies])))
     }
+    
+    func testSearchWithNoMatchesShowsEmpty() async {
+        let fake = FakeArtworkService(ids: [])
+        let viewModel = SearchViewModel(service: fake)
+
+        viewModel.send(.queryChanged("zzzz"))
+
+        await viewModel.sendAndWait(.searchSubmitted)
+
+        XCTAssertEqual(viewModel.state, SearchState(query: "zzzz", phase: .empty))
+    }
+    
+    func testSearchFailureShowsError() async {
+        let fake = FakeArtworkService(shouldFail: true)
+        let viewModel = SearchViewModel(service: fake)
+
+        viewModel.send(.queryChanged("monet"))
+        await viewModel.sendAndWait(.searchSubmitted)
+
+        XCTAssertEqual(viewModel.state, SearchState(query: "monet", phase: .failed("Search failed. Try again.")))
+    }
 }
