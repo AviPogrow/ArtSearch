@@ -7,6 +7,11 @@
 
 import Foundation
 
+protocol HTTPClient: Sendable {
+    
+    func data(for request: URLRequest) async throws -> (Data, URLResponse)
+}
+
 protocol ArtworkSearching: Sendable {
     func searchIDs(for term: String) async throws -> [Int]
     func artwork(id: Int) async throws -> Artwork
@@ -16,8 +21,17 @@ struct SearchResponse: Decodable {
     let objectIDs: [Int]?                               // the Met sends null when nothing matches
 }
 
+
 struct ArtworkService: ArtworkSearching {
-    private let baseURL = "https://collectionapi.metmuseum.org/public/collection"
+        private let baseURL = "https://collectionapi.metmuseum.org/public/collection"
+        private let client: any HTTPClient                                  // ① NEW
+
+        init(client: any HTTPClient = URLSession.shared) {                  // ② NEW
+            self.client = client
+        }
+    
+    
+ 
 
     func searchIDs(for term: String) async throws -> [Int] {
         var components = URLComponents(string: "\(baseURL)/v1.1/search")!
@@ -35,10 +49,17 @@ struct ArtworkService: ArtworkSearching {
     }
 
     private func fetch(_ url: URL) async throws -> Data {
-        let (data, response) = try await URLSession.shared.data(for: URLRequest(url: url))
-        guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
-            throw URLError(.badServerResponse)
-        }
+           let (data, response) = try await client.data(for: URLRequest(url: url))   // ③ CHANGED
+           guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
+               throw URLError(.badServerResponse)
+           }
         return data
+    }
+}
+
+extension URLSession: HTTPClient {
+    func data(for request: URLRequest) async throws -> (Data, URLResponse) {
+        
+        try await data(for: request, delegate: nil)
     }
 }
