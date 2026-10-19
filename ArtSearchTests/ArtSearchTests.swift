@@ -46,4 +46,28 @@ final class ArtSearchTests: XCTestCase {
 
         XCTAssertEqual(viewModel.state, SearchState(query: "monet", phase: .failed("Search failed. Try again.")))
     }
+    
+    func testServiceDecodesSearchIDs() async throws {
+        let json = #"{"objectIDs": [1, 2, 3]}"#
+        let fake = FakeHTTPClient(body: Data(json.utf8))
+        let service = ArtworkService(client: fake)
+
+        let ids = try await service.searchIDs(for: "monet")
+
+        XCTAssertEqual(ids, [1, 2, 3])
+    }
+    
+    func testServiceThrowsOnServerError() async {
+        let json = #"{"objectIDs": [1, 2, 3]}"#
+        let fake = FakeHTTPClient(body: Data(json.utf8), statusCode: 500)
+        let service = ArtworkService(client: fake)
+
+        do {
+            _ = try await service.searchIDs(for: "monet")
+            XCTFail("Expected an error, but searchIDs succeeded")
+        } catch {
+            XCTAssertEqual((error as? URLError)?.code, .badServerResponse)
+        }
+    }
+    
 }
