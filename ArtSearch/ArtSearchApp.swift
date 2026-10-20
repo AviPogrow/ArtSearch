@@ -11,7 +11,8 @@ import SwiftUI
 struct ArtSearchApp: App {
     var body: some Scene {
         WindowGroup {
-            SearchView()
+            LoginView()
+            //SearchView()
         }
     }
 }
