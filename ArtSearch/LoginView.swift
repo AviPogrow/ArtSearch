@@ -1,39 +1,8 @@
 import SwiftUI
 
 struct LoginView: View {
-    @State private var email = ""
-    @State private var password = ""
-
-    // computed property to see if email is valid
-    private var isEmailValid: Bool {
-        // split the string
-        let parts = email.split(separator: "@")
-        // check there are 2 parts and the second
-        // has an .
-        return parts.count == 2 && parts[1].contains(".")
-    }
-
-    // check if password is valid if it
-    // has more than 8 characters
-    private var isPasswordValid: Bool {
-        password.count >= 8
-    }
-
-    // computed property that checks both email and password
-    private var canLogIn: Bool {
-        isEmailValid && isPasswordValid
-    }
-
-    // NEW: messages, nil when there's nothing to say
-    private var emailMessage: String? {
-        if email.isEmpty || isEmailValid { return nil }
-        return "Enter an email like name@example.com"
-    }
-
-    private var passwordMessage: String? {
-        if password.isEmpty || isPasswordValid { return nil }
-        return "At least 8 characters (\(password.count)/8)"
-    }
+   
+    @StateObject private var viewModel = LoginViewModel()
 
     var body: some View {
         VStack(spacing: 16) {
@@ -42,7 +11,7 @@ struct LoginView: View {
 
             // NEW: field and its message grouped together
             VStack(alignment: .leading, spacing: 6) {
-                TextField("Email", text: $email)
+                TextField("Email", text: $viewModel.email)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
                     .keyboardType(.emailAddress)
@@ -59,8 +28,8 @@ struct LoginView: View {
             // to the view
             // with the message
             // else remove the message view
-            if let emailMessage {
-                    Text(emailMessage)
+                if let message =  viewModel.emailMessage {
+                    Text(message)
                         .font(.footnote)
                         .foregroundStyle(.red)
                 }
@@ -68,7 +37,7 @@ struct LoginView: View {
 
             // NEW: same for the password
             VStack(alignment: .leading, spacing: 6) {
-                SecureField("Password", text: $password)
+                SecureField("Password", text: $viewModel.password)
                     .padding(12)
                     .background(Color(.secondarySystemBackground))
                     .clipShape(RoundedRectangle(cornerRadius: 10))
@@ -79,18 +48,18 @@ struct LoginView: View {
 
                 // if password message is not nil
                 // then add text view and display the message else don't show it
-                if let passwordMessage {
-                    Text(passwordMessage)
+                if let message =  viewModel.passwordMessage {
+                    Text(message)
                         .font(.footnote)
                         .foregroundStyle(.red)
                 }
             }
 
             Button("Log in") {
-                print("Log in tapped: \(email)")
+                print("Log in tapped: \(viewModel.email)")
             }
             .buttonStyle(.borderedProminent)
-            .disabled(!canLogIn)
+            .disabled(!viewModel.canLogIn)
         }
         .padding()
     }
