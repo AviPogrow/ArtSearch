@@ -34,8 +34,9 @@ struct LoginView: View {
                         .foregroundStyle(.red)
                 }
             }
-
-            // NEW: same for the password
+            .disabled(viewModel.isLoggingIn)   // NEW (use 2)
+            
+            
             VStack(alignment: .leading, spacing: 6) {
                 SecureField("Password", text: $viewModel.password)
                     .padding(12)
@@ -54,12 +55,17 @@ struct LoginView: View {
                         .foregroundStyle(.red)
                 }
             }
-
+            .disabled(viewModel.isLoggingIn)   // NEW (use 2)
+            
             Button("Log in") {
-                print("Log in tapped: \(viewModel.email)")
+                viewModel.logInTapped()
             }
             .buttonStyle(.borderedProminent)
             .disabled(!viewModel.canLogIn)
+
+            if viewModel.isLoggingIn {
+                ProgressView("Logging in…")
+            }
         }
         .padding()
     }
