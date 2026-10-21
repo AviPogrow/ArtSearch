@@ -18,6 +18,14 @@ enum LoginPhase {
 
 final class LoginViewModel: ObservableObject {
     
+    // as user types email ..this property
+    // gets reset and if wee are in a failed
+    // state we reste the  state to idle
+    // that moves us out of the .failed(message)
+    // so the  old error message returns nil
+    // so when the view redraws it checks if error message is nil
+    //   if let message = viewModel.errorMessage {
+    //Text(message)
     @Published var email = "" {
         didSet { clearFailure() }
     }
@@ -106,6 +114,8 @@ final class LoginViewModel: ObservableObject {
     
     // if the phase is failed then extract the text inside it
     // and call it "message"
+    // if we move out of the failed state
+    // error message becomes nil
     var errorMessage: String? {
         if case .failed(let message) = phase { return message }
         return nil
