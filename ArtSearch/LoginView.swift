@@ -9,6 +9,15 @@ struct LoginView: View {
             Text("ArtSearch")
                 .font(.largeTitle.bold())
 
+            if let message = viewModel.errorMessage {
+                Text(message)
+                    .font(.subheadline)
+                    .foregroundStyle(.red)
+                    .frame(maxWidth: .infinity)
+                    .padding(10)
+                    .background(Color.red.opacity(0.1))
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+            }
             // NEW: field and its message grouped together
             VStack(alignment: .leading, spacing: 6) {
                 TextField("Email", text: $viewModel.email)
