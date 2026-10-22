@@ -26,6 +26,12 @@ final class LoginViewModel: ObservableObject {
     @Published private(set) var email = ""
     @Published private(set) var password = ""
     @Published private(set) var phase: LoginPhase = .idle
+    
+    private let authService: any AuthService
+
+    init(authService: any AuthService = DemoAuthService()) {
+        self.authService = authService
+    }
 
     // Rules that read the input
     var isEmailValid: Bool {
@@ -82,16 +88,15 @@ final class LoginViewModel: ObservableObject {
         guard canLogIn else { return }
         phase = .loggingIn
 
-        // TEMPORARY: pretend answer until A5
         Task {
-            try? await Task.sleep(for: .seconds(1))
-
-            if password == "password1" {
+            do {
+                try await authService.logIn(email: email, password: password)
                 phase = .loggedIn
-            } else {
+            } catch AuthError.network {
+                phase = .failed("Can't reach the server. Check your connection.")
+            } catch {
                 phase = .failed("Email or password is incorrect")
             }
-            print("Phase is now: \(phase)")
         }
     }
 
