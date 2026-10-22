@@ -8,7 +8,7 @@
 import Foundation
 import Combine
 
-enum LoginPhase {
+enum LoginPhase: Equatable {
     case idle
     case loggingIn
     case failed(String)

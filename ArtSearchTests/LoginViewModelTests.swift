@@ -54,4 +54,56 @@ final class LoginViewModelTests: XCTestCase {
         XCTAssertEqual(vm.errorMessage, "Email or password is incorrect")
     }
     
+    func test_correctLogin_endsLoggedIn() async {
+        let vm = LoginViewModel(authService: FakeAuthService())
+
+        vm.send(.emailChanged("avi@example.com"))
+        vm.send(.passwordChanged("anything1"))
+        vm.send(.logInTapped)
+        await vm.loginTask?.value
+
+        XCTAssertEqual(vm.phase, .loggedIn)
+    }
+
+    func test_noNetwork_showsConnectionMessage() async {
+        let fake = FakeAuthService()
+        fake.errorToThrow = .network
+        let vm = LoginViewModel(authService: fake)
+
+        vm.send(.emailChanged("avi@example.com"))
+        vm.send(.passwordChanged("anything1"))
+        vm.send(.logInTapped)
+        await vm.loginTask?.value
+
+        XCTAssertEqual(vm.errorMessage, "Can't reach the server. Check your connection.")
+    }
+
+    func test_editingAfterFailure_clearsError() async {
+        let fake = FakeAuthService()
+        fake.errorToThrow = .invalidCredentials
+        let vm = LoginViewModel(authService: fake)
+
+        vm.send(.emailChanged("avi@example.com"))
+        vm.send(.passwordChanged("anything1"))
+        vm.send(.logInTapped)
+        await vm.loginTask?.value
+
+        vm.send(.passwordChanged("anything12"))
+
+        XCTAssertEqual(vm.phase, .idle)
+    }
+
+    func test_doubleTap_logsInOnlyOnce() async {
+        let fake = FakeAuthService()
+        let vm = LoginViewModel(authService: fake)
+
+        vm.send(.emailChanged("avi@example.com"))
+        vm.send(.passwordChanged("anything1"))
+        vm.send(.logInTapped)
+        vm.send(.logInTapped)   // second tap, while logging in
+        await vm.loginTask?.value
+
+        XCTAssertEqual(fake.logInCallCount, 1)
+    }
+    
 }
