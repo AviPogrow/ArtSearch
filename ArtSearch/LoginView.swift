@@ -20,7 +20,11 @@ struct LoginView: View {
             }
             // NEW: field and its message grouped together
             VStack(alignment: .leading, spacing: 6) {
-                TextField("Email", text: $viewModel.email)
+                
+                TextField("Email", text: Binding(
+                    get: { viewModel.email },
+                    set: { viewModel.send(.emailChanged($0)) }
+                ))
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
                     .keyboardType(.emailAddress)
@@ -47,7 +51,11 @@ struct LoginView: View {
             
             
             VStack(alignment: .leading, spacing: 6) {
-                SecureField("Password", text: $viewModel.password)
+                SecureField("Password", text: Binding(
+                    get: { viewModel.password },
+                    set: { viewModel.send(.passwordChanged($0)) }
+                ))
+                //SecureField("Password", text: $viewModel.password)
                     .padding(12)
                     .background(Color(.secondarySystemBackground))
                     .clipShape(RoundedRectangle(cornerRadius: 10))
@@ -67,7 +75,7 @@ struct LoginView: View {
             .disabled(viewModel.isLoggingIn)   // NEW (use 2)
             
             Button("Log in") {
-                viewModel.logInTapped()
+                viewModel.send(.logInTapped)
             }
             .buttonStyle(.borderedProminent)
             .disabled(!viewModel.canLogIn)
