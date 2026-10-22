@@ -12,19 +12,33 @@ import XCTest
 final class LoginViewModelTests: XCTestCase {
 
     // Test 1: easy
-    func test_invalidEmail_cannotLogIn() {
-        let vm = LoginViewModel()
+    func test_invalidEmail_cannotLogIn() async {
+        let vm = LoginViewModel(authService: FakeAuthService())
         vm.send(.emailChanged("abc"))
         vm.send(.passwordChanged("password1"))
 
         XCTAssertFalse(vm.canLogIn)
     }
     // Test 2: naive
-    func test_wrongPassword_showsError() {
-        let vm = LoginViewModel()
+    //func test_wrongPassword_showsError() {
+     //   let vm = LoginViewModel()
+     //   vm.send(.emailChanged("avi@example.com"))
+      //  vm.send(.passwordChanged("password2"))
+      //  vm.send(.logInTapped)
+
+      //  XCTAssertEqual(vm.errorMessage, "Email or password is incorrect")
+    //}
+    
+    // Test 2: with the fake, awaiting the login
+    func test_wrongPassword_showsError() async {
+        let fake = FakeAuthService()
+        fake.errorToThrow = .invalidCredentials
+        let vm = LoginViewModel(authService: fake)
+
         vm.send(.emailChanged("avi@example.com"))
-        vm.send(.passwordChanged("password2"))
+        vm.send(.passwordChanged("anything1"))
         vm.send(.logInTapped)
+        await vm.loginTask?.value
 
         XCTAssertEqual(vm.errorMessage, "Email or password is incorrect")
     }

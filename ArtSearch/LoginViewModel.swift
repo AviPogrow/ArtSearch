@@ -27,6 +27,8 @@ final class LoginViewModel: ObservableObject {
     @Published private(set) var password = ""
     @Published private(set) var phase: LoginPhase = .idle
     
+    private(set) var loginTask: Task<Void, Never>?
+    
     private let authService: any AuthService
 
     init(authService: any AuthService = DemoAuthService()) {
@@ -88,7 +90,7 @@ final class LoginViewModel: ObservableObject {
         guard canLogIn else { return }
         phase = .loggingIn
 
-        Task {
+        loginTask = Task {
             do {
                 try await authService.logIn(email: email, password: password)
                 phase = .loggedIn
@@ -99,7 +101,7 @@ final class LoginViewModel: ObservableObject {
             }
         }
     }
-
+    
     private func clearFailure() {
         if case .failed = phase {
             phase = .idle
